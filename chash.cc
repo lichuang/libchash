@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <list>
 #include "chash.h"
 
 class VNode {

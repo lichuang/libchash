@@ -2,7 +2,6 @@
 #define __CHASH_H__
 
 #include <stdint.h>
-#include <list>
 #include <map>
 #include <string>
 
