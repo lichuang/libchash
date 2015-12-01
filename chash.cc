@@ -25,6 +25,22 @@ public:
   list<VNode*> child_;
 };
 
+static inline hashindex_t hash(const char *str) {
+  hashindex_t hash = 5381;
+  const char *s;
+
+  if (str == NULL) {
+    return 0;
+  }
+
+  for (s = str; *s; s++) { 
+    hash = ((hash << 5) + hash) + *s;
+  }
+  hash &= 0x7FFFFFFF;
+
+  return hash / 65535;
+}
+
 VNode::VNode(CNode *cnode, int id)
   : parent_(cnode) {
   char buf[256];
@@ -51,7 +67,8 @@ CNode::~CNode() {
   for (iter = child_.begin(); iter != child_.end(); ) {
     VNode *child = *iter;
     ++iter;
-    chash_->eraseVNode(child);
+    hashindex_t idx = hash(child->Id().c_str());
+    chash_->vnodes_.erase(idx);
     delete child;
   }
 }
@@ -67,22 +84,6 @@ CHash::~CHash() {
     ++iter;
     delete cnode;
   }
-}
-
-static inline hashindex_t hash(const char *str) {
-  hashindex_t hash = 5381;
-  const char *s;
-
-  if (str == NULL) {
-    return 0;
-  }
-
-  for (s = str; *s; s++) { 
-    hash = ((hash << 5) + hash) + *s;
-  }
-  hash &= 0x7FFFFFFF;
-
-  return hash / 65535;
 }
 
 bool CHash::insert(const string &id, int vnodes) {
@@ -134,10 +135,4 @@ void CHash::erase(const string &id) {
 
   delete iter->second;
   cnodes_.erase(iter);
-}
-
-void CHash::eraseVNode(VNode *vnode) {
-  hashindex_t idx = hash(vnode->Id().c_str());
-
-  vnodes_.erase(idx);
 }

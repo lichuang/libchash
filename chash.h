@@ -26,9 +26,6 @@ public:
   void erase(const string &id);
 
 private:
-  void eraseVNode(VNode *);
-
-private:
   map<hashindex_t, VNode *, std::less<hashindex_t> > vnodes_;
   map<string, CNode*> cnodes_;
 };
