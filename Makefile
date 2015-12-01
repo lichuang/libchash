@@ -16,17 +16,11 @@ CC=g++
 AR= ar rcu
 CFLAGS=-Wall -Werror -g 
 #LDFLAGS= -L ./lib -lcr -pthread
-LDFLAGS= -L ./lib -lcr -ldl
+LDFLAGS= -L ./lib -lchash -ldl
 
 all:$(OBJS)
 	$(AR) $(LIB_DIR)/$(LIB) $(OBJS)
-	$(CC) example/test.cc -I./src $(CFLAGS) $(INCLUDE) -o example/test $(LDFLAGS)
-
-ex:$(LIB_DIR)/$(LIB) example/*.cc
-	$(CC) example/test.cc -I./src $(CFLAGS) $(INCLUDE) -o example/test $(LDFLAGS)
-
-test:$(LIB_DIR)/$(LIB)
-	$(CC) test/main.c -I./src $(CFLAGS) $(INCLUDE) -o test/test $(LDFLAGS)
+	$(CC) test.cc -I./src $(CFLAGS) $(INCLUDE) -o test $(LDFLAGS)
 
 $(OBJ_DIR)/%.o:$(SRC_DIR)/%.$(EXTENSION) 
 	$(CC) $< -o $@ -c $(CFLAGS) $(INCLUDE) 
