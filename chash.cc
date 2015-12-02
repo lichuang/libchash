@@ -26,20 +26,33 @@ public:
   list<VNode*> child_;
 };
 
-static inline hashindex_t hash(const char *str) {
-  hashindex_t hash = 5381;
-  const char *s;
+// MurmurHash2 light implementation
+static hashindex_t hash(const void *key, int key_size) {
+    const hashindex_t magic  = 0x5bd1e995;
+    const int       rotate = 24;
+    const unsigned char    *data  = (const unsigned char *)key;
+    uint32_t       hash   = 0x4d4d4832 ^ key_size;
 
-  if (str == NULL) {
-    return 0;
-  }
-
-  for (s = str; *s; s++) { 
-    hash = ((hash << 5) + hash) + *s;
-  }
-  hash &= 0x7FFFFFFF;
-
-  return hash / 65535;
+    while (key_size >= 4) {
+        hashindex_t value = *(hashindex_t *)data;
+        value    *= magic;
+        value    ^= value >> rotate;
+        value    *= magic;
+        hash     *= magic;
+        hash     ^= value;
+        data     += 4;
+        key_size -= 4;
+    }
+    switch (key_size) {
+        case 3: hash ^= data[2] << 16;
+        case 2: hash ^= data[1] << 8;
+        case 1: hash ^= data[0];
+                hash *= magic;
+    }
+    hash ^= hash >> 13;
+    hash *= magic;
+    hash ^= hash >> 15;
+    return hash;
 }
 
 VNode::VNode(CNode *cnode, int id)
@@ -68,7 +81,7 @@ CNode::~CNode() {
   for (iter = child_.begin(); iter != child_.end(); ) {
     VNode *child = *iter;
     ++iter;
-    hashindex_t idx = hash(child->Id().c_str());
+    hashindex_t idx = hash(child->Id().c_str(), child->Id().length());
     chash_->vnodes_.erase(idx);
     delete child;
   }
@@ -99,12 +112,12 @@ bool CHash::insert(const string &id, int vnodes) {
 
   for (iter = cnode->child_.begin(); iter != cnode->child_.end(); ) {
     VNode *child = *iter;
-    hashindex_t idx = hash(child->Id().c_str());
+    hashindex_t idx = hash(child->Id().c_str(), child->Id().length());
     while (vnodes_.find(idx) != vnodes_.end()) {
       char buf[200];
       snprintf(buf, sizeof(buf), "%s_%d", child->Id().c_str(), idx);
       child->id_ = buf;
-      idx = hash(child->Id().c_str());
+      idx = hash(child->Id().c_str(), child->Id().length());
     }
     vnodes_[idx] = child;
     ++iter;
@@ -115,7 +128,7 @@ bool CHash::insert(const string &id, int vnodes) {
 }
 
 void CHash::find(const string &key, string *id) {
-  hashindex_t idx = hash(key.c_str());
+  hashindex_t idx = hash(key.c_str(), key.length());
 
   map<hashindex_t, VNode*>::const_iterator iter = vnodes_.lower_bound(idx);
   VNode *vnode;
