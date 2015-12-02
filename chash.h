@@ -19,7 +19,9 @@ public:
   CHash();
   ~CHash();
 
-  void find(const string &key, string *id);
+  CHash* clone();
+
+  bool find(const string &key, string *id);
   bool insert(const string &id, int vnodes);
 
   void erase(const string &id);
