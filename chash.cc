@@ -28,20 +28,7 @@ public:
   int vnode_;
 };
 
-// BKDR Hash Function, https://www.byvoid.com/blog/string-hash-compare/
 static hashindex_t hash(const char *str, int len) {
-  /*
-  MD5 md5(str, len);
-  string ret = md5.toString();
-  const char *s = ret.c_str();
-
-  unsigned int seed = 131; // 31 131 1313 13131 131313 etc..
-  unsigned int hash = 0;
-
-  while (--len > 0) {
-    hash = hash * seed + (*s++);
-  }
-  */
   MD5 md5(str, len);
   const byte *digest = md5.digest();
   unsigned int hash = 0;
