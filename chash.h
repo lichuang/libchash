@@ -22,9 +22,10 @@ public:
   CHash* clone();
 
   bool find(const string &key, string *id);
-  bool insert(const string &id, int vnodes);
+  bool insert(const string &id);
 
   void erase(const string &id);
+  void clean();
 
 private:
   map<hashindex_t, VNode *, std::less<hashindex_t> > vnodes_;

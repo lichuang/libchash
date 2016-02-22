@@ -5,11 +5,11 @@
 int main() {
   CHash chash;
 
-  chash.insert("127.0.0.1:11111", 10);
-  chash.insert("100.84.44.134:22222", 10);
-  chash.insert("8.8.8.8:22222", 10);
-  chash.insert("192.168.0.1:22222", 10);
-  chash.insert("123.456.7.89:22222", 10);
+  chash.insert("127.0.0.1:11111");
+  chash.insert("100.84.44.134:22222");
+  chash.insert("8.8.8.8:22222");
+  chash.insert("192.168.0.1:22222");
+  chash.insert("123.456.7.89:22222");
 
   map<string, int> count;
   char tmp[100];

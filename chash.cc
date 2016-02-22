@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <list>
 #include "chash.h"
+#include "md5.h"
 
 class VNode {
 public:
@@ -29,11 +30,27 @@ public:
 
 // BKDR Hash Function, https://www.byvoid.com/blog/string-hash-compare/
 static hashindex_t hash(const char *str, int len) {
+  /*
+  MD5 md5(str, len);
+  string ret = md5.toString();
+  const char *s = ret.c_str();
+
   unsigned int seed = 131; // 31 131 1313 13131 131313 etc..
   unsigned int hash = 0;
 
   while (--len > 0) {
-    hash = hash * seed + (*str++);
+    hash = hash * seed + (*s++);
+  }
+  */
+  MD5 md5(str, len);
+  const byte *digest = md5.digest();
+  unsigned int hash = 0;
+  int i;
+  for(i = 0; i < 4; i++) {
+    hash += ((long)(digest[i*4 + 3]&0xFF) << 24)
+      | ((long)(digest[i*4 + 2]&0xFF) << 16)
+      | ((long)(digest[i*4 + 1]&0xFF) <<  8)
+      | ((long)(digest[i*4 + 0]&0xFF));
   }
 
   return (hash & 0x7FFFFFFF);
@@ -76,6 +93,11 @@ CHash::CHash() {
 }
 
 CHash::~CHash() {
+  clean();
+}
+
+void CHash::clean() {
+
   map<string, CNode*>::iterator iter;
 
   for (iter = cnodes_.begin(); iter != cnodes_.end(); ) {
@@ -83,6 +105,8 @@ CHash::~CHash() {
     ++iter;
     delete cnode;
   }
+
+  cnodes_.clear();
 }
 
 CHash * CHash::clone() {
@@ -93,13 +117,14 @@ CHash * CHash::clone() {
   for (iter = cnodes_.begin(); iter != cnodes_.end(); ++iter) {
     CNode *cnode = iter->second;
 
-    chash->insert(cnode->Id(), cnode->vnode_);
+    chash->insert(cnode->Id());
   }
 
   return chash;
 }
 
-bool CHash::insert(const string &id, int vnodes) {
+bool CHash::insert(const string &id) {
+  int vnodes = 512;
   if (cnodes_.find(id) != cnodes_.end()) {
     return false;
   }
